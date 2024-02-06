@@ -4,8 +4,25 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500&display=swap" rel="stylesheet" />
     <script type="module" src="index.js" defer></script>
     <title>Terminal</title>
   </head>
-  <body></body>
+  <body>
+    <div class="terminal">
+      <div class="terminal__bar">
+        <div class="terminal__bar__dot-container">
+          <div class="terminal__bar__dot-container__dot red-dot"></div>
+          <div class="terminal__bar__dot-container__dot yellow-dot"></div>
+          <div class="terminal__bar__dot-container__dot green-dot"></div>
+        </div>
+        <p>webjaksklep</p>
+      </div>
+      <textarea class="terminal__textarea"></textarea>
+      <form class="terminal__container">
+        <input class="terminal__container__input" />
+      </form>
+    </div>
+  </body>
 </html>
