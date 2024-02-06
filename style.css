@@ -91,7 +91,7 @@ body {
 }
 .terminal__container::before {
   content: "";
-  position: absolute;
+  position: relative;
   width: 3px;
   height: 21px;
   background-color: rgb(217, 217, 217);
@@ -101,6 +101,28 @@ body {
 }
 .terminal__container.input-focused::before {
   background-color: transparent;
+}
+.terminal__suggestions-container {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  width: 100%;
+  height: auto;
+  color: rgb(217, 217, 217);
+  bottom: 2px;
+  left: 20px;
+}
+.terminal__suggestions-container__suggestion {
+  position: relative;
+  height: 100%;
+  width: -moz-min-content;
+  width: min-content;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-radius: 8px;
+  margin-right: 20px;
+  background-color: rgb(101, 107, 97);
 }
 
 .red-dot {

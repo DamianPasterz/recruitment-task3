@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', function () {
-  console.log('loaded');
-  const input = document.querySelector('.terminal__container__input');
-  const terminalContainer = document.querySelector('.terminal__container');
-  const textarea = document.querySelector('.terminal__textarea');
+  const input = document.getElementById('input');
+  const terminalContainer = document.getElementById('terminal-container');
+  const textarea = document.getElementById('textarea');
+  const suggestionsContainer= document.getElementById('suggestions')
   const history = [];
   let historyIndex = -1;
 
@@ -12,7 +12,8 @@ document.addEventListener('DOMContentLoaded', function () {
       textarea.textContent = '';
     },
     help: function() {
-      appendToTerminal('Available commands: clear, help, quote, double X, hello');
+      appendToTerminal(`Available commands: clear, help, quote, double X, hello
+          right arrow - switches between suggestions`);
     },
     quote: function() {
       fetch('https://dummyjson.com/quotes/random')
@@ -50,6 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
       history.unshift(command);
       input.value = '';
       historyIndex = -1;
+      suggestionsContainer.innerHTML = '';
     }
   });
 
@@ -73,6 +75,57 @@ document.addEventListener('DOMContentLoaded', function () {
   input.addEventListener('blur', function() {
     terminalContainer.classList.remove('input-focused');
   });
+
+  input.addEventListener('input', function(e) {
+    const userInput = e.target.value.trim().toLowerCase();
+ 
+    suggestionsContainer.innerHTML = '';
+  console.log('userinput',userInput);
+  
+    if (userInput.length === 0) {
+      suggestionsContainer.style.display = 'none'; 
+      return;
+    }
+  
+    const suggestions = Object.keys(ALL_COMMANDS).filter(cmd => cmd.startsWith(userInput));
+    suggestions.forEach(suggestion => {
+      const suggestionElement = document.createElement('div');
+      suggestionElement.className ='terminal__suggestions-container__suggestion'
+      suggestionElement.textContent = suggestion;
+      suggestionElement.addEventListener('click', function() {
+        input.value = suggestion; 
+        suggestionsContainer.style.display = 'none';  
+      });
+      suggestionsContainer.appendChild(suggestionElement);
+    });
+  
+    suggestionsContainer.style.display = 'flex';  
+ 
+  
+
+input.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight') {
+    
+    const suggestions = suggestionsContainer.querySelectorAll('div');
+    console.log(suggestions);
+    if (suggestions.length > 0) {
+      let currentIndex = -1;
+      for (let i = 0; i < suggestions.length; i++) {
+        if (suggestions[i].textContent === input.value) {
+          currentIndex = i;
+          break;
+        }
+      }
+      const nextIndex = (currentIndex + 1) % suggestions.length;
+      input.value = suggestions[nextIndex].textContent;
+    }
+  }
+});
+
+});
+  
+
+
 
   function executeCommand(command) {
     const [cmd, ...args] = command.split(' ');
