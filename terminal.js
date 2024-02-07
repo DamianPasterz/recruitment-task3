@@ -76,7 +76,7 @@ class TerminalUI {
   cycleSuggestions() {
     const suggestions = this.suggestionsContainer.querySelectorAll('div');
     if (suggestions.length >  0) {
-      let currentIndex = Array.from(suggestions).findIndex(el => el.textContent === this.input.value);
+      const currentIndex = Array.from(suggestions).findIndex(el => el.textContent === this.input.value);
       const nextIndex = (currentIndex +  1) % suggestions.length;
       this.input.value = suggestions[nextIndex].textContent;
     }

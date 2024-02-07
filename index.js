@@ -1,5 +1,7 @@
 import { TerminalUI } from './terminal.js';
 
- const terminalInstance = new TerminalUI();
+document.addEventListener('DOMContentLoaded', () => {
+  const terminalInstance = new TerminalUI();
+});
 
  export { terminalInstance };
