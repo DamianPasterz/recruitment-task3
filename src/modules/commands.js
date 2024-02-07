@@ -1,4 +1,4 @@
-import { terminalInstance } from './index.js';
+import { terminalInstance } from '../index.js';
 import { fetchQuote, doubleNumber, generateHelpMessage } from './utils.js';
 import { customCommandsDescriptions } from './customCommandsDescriptions.js';
 
