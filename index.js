@@ -1,3 +1,5 @@
-import { initializeUi } from './terminal.js';
+import { TerminalUI } from './terminal.js';
 
-initializeUi();
+ const terminalInstance = new TerminalUI();
+
+ export { terminalInstance };

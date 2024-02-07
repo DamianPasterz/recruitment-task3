@@ -1,102 +1,123 @@
 import { BUILTIN_COMMANDS, CUSTOM_COMMANDS } from './commands.js';
 
-export function initializeUi() {
-  const terminalContainer = document.getElementById('terminal-container');
-  const input = document.getElementById('input');
-  const textarea = document.getElementById('textarea');
-  const suggestionsContainer = document.getElementById('suggestions');
+class TerminalUI {
+  constructor() {
+    this.initializeElements();
+    this.bindEvents();
+    this.history = [];
+    this.historyIndex = -1;
+  }
 
-  input.addEventListener('focus', () => terminalContainer.classList.add('input-focused'));
-  input.addEventListener('blur', () => terminalContainer.classList.remove('input-focused'));
-  input.addEventListener('input', handleInputChange);
-  input.addEventListener('keydown', handleKeyDown);
+  initializeElements() {
+    this.terminalContainer = document.getElementById('terminal-container');
+    this.input = document.getElementById('input');
+    this.textarea = document.getElementById('textarea');
+    this.suggestionsContainer = document.getElementById('suggestions');
+    this.input.setAttribute('name', 'uniqueName' + Date.now());
+  }
 
-  terminalContainer.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const command = input.value.trim();
-    if (command) {
-      appendToTerminal(`you: ${command}`);
-      executeCommand(command);
-      history.unshift(command);
-      input.value = '';
-      historyIndex = -1;
-      suggestionsContainer.innerHTML = '';
-    }
-  });
+  bindEvents() {
+    this.input.addEventListener('focus', this.handleFocus.bind(this));
+    this.input.addEventListener('blur', this.handleBlur.bind(this));
+    this.input.addEventListener('input', this.handleInputChange.bind(this));
+    this.input.addEventListener('keydown', this.handleKeyDown.bind(this));
 
-  const history = [];
-  let historyIndex = -1;
+    this.terminalContainer.addEventListener('submit', this.handleSubmit.bind(this));
 
-  function handleInputChange(e) {
+    document.addEventListener('DOMContentLoaded', this.appendInitialMessage.bind(this));
+  }
+
+  handleFocus() {
+    this.terminalContainer.classList.add('input-focused');
+  }
+
+  handleBlur() {
+    this.terminalContainer.classList.remove('input-focused');
+  }
+
+  handleInputChange(e) {
     const userInput = e.target.value.trim().toLowerCase();
-    suggestionsContainer.innerHTML = '';
-    if (userInput.length ===  0) {
-      suggestionsContainer.style.display = 'none';
+    this.suggestionsContainer.innerHTML = '';
+    if (!userInput) {
+      this.suggestionsContainer.style.display = 'none';
       return;
     }
-    showSuggestions(userInput);
+    this.showSuggestions(userInput);
   }
 
-  function handleKeyDown(e) {
-    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-      navigateHistory(e.key);
+  handleKeyDown(e) {
+    if (['ArrowUp', 'ArrowDown'].includes(e.key)) {
+      this.navigateHistory(e.key);
     } else if (e.key === 'ArrowRight') {
-      cycleSuggestions();
+      this.cycleSuggestions();
     }
   }
 
-  function navigateHistory(direction) {
-    historyIndex = direction === 'ArrowUp' ? Math.min(historyIndex +  1, history.length -  1) : Math.max(historyIndex -  1, -1);
-    input.value = historyIndex === -1 ? '' : history[historyIndex];
+  navigateHistory(direction) {
+    this.historyIndex = direction === 'ArrowUp' ? Math.min(this.historyIndex +  1, this.history.length -  1) : Math.max(this.historyIndex -  1, -1);
+    this.input.value = this.historyIndex === -1 ? '' : this.history[this.historyIndex];
   }
 
-  function showSuggestions(userInput) {
+  showSuggestions(userInput) {
     const suggestions = Object.keys({...BUILTIN_COMMANDS, ...CUSTOM_COMMANDS}).filter(cmd => cmd.startsWith(userInput));
     suggestions.forEach(suggestion => {
       const suggestionElement = document.createElement('div');
       suggestionElement.className = 'terminal__suggestions-container__suggestion';
       suggestionElement.textContent = suggestion;
       suggestionElement.addEventListener('click', () => {
-        input.value = suggestion;
-        suggestionsContainer.style.display = 'none';
+        this.input.value = suggestion;
+        this.suggestionsContainer.style.display = 'none';
       });
-      suggestionsContainer.appendChild(suggestionElement);
+      this.suggestionsContainer.appendChild(suggestionElement);
     });
-    suggestionsContainer.style.display = 'flex';
+    this.suggestionsContainer.style.display = 'flex';
   }
 
-  function cycleSuggestions() {
-    const suggestions = suggestionsContainer.querySelectorAll('div');
+  cycleSuggestions() {
+    const suggestions = this.suggestionsContainer.querySelectorAll('div');
     if (suggestions.length >  0) {
-      let currentIndex = Array.from(suggestions).findIndex(el => el.textContent === input.value);
+      let currentIndex = Array.from(suggestions).findIndex(el => el.textContent === this.input.value);
       const nextIndex = (currentIndex +  1) % suggestions.length;
-      input.value = suggestions[nextIndex].textContent;
+      this.input.value = suggestions[nextIndex].textContent;
     }
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    appendToTerminal('Last login: ' + new Date().toLocaleString('en-US', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit',hour12: false, minute: '2-digit', second: '2-digit', timeZoneName: 'short' }));
-  });
-}
+  handleSubmit(e) {
+    e.preventDefault();
+    const command = this.input.value.trim();
+    if (command) {
+      this.appendToTerminal(`you: ${command}`);
+      this.executeCommand(command);
+      this.history.unshift(command);
+      this.input.value = '';
+      this.historyIndex = -1;
+      this.suggestionsContainer.innerHTML = '';
+    }
+  }
 
-export function executeCommand(command) {
-  const [cmd, ...args] = command.split(' ');
-  if (BUILTIN_COMMANDS[cmd] || CUSTOM_COMMANDS[cmd]) {
-    if (BUILTIN_COMMANDS[cmd]) {
-      BUILTIN_COMMANDS[cmd](...args);
+  appendToTerminal(text) {
+    const prefix = text.includes('you:') ? '' : 'terminal: ';
+    this.textarea.textContent += `${prefix}${text}\n`;
+    this.textarea.scrollTop = this.textarea.scrollHeight;
+  }
+
+  clearTerminal() {
+    this.textarea.textContent = '';
+  }
+
+  executeCommand(command) {
+    const [cmd, ...args] = command.split(' ');
+    if (BUILTIN_COMMANDS[cmd] || CUSTOM_COMMANDS[cmd]) {
+      (BUILTIN_COMMANDS[cmd] || CUSTOM_COMMANDS[cmd])(...args);
     } else {
-      CUSTOM_COMMANDS[cmd](...args);
+      this.appendToTerminal(`Command not found: ${cmd}`);
     }
-  } else {
-    appendToTerminal(`Command not found: ${cmd}`);
+  }
+
+  appendInitialMessage() {
+    this.appendToTerminal('Last login: ' + new Date().toLocaleString('en-US', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', hour12: false, minute: '2-digit', second: '2-digit', timeZoneName: 'short' }));
   }
 }
 
-export  function appendToTerminal(text) {
-      if (text.includes('you:')) {
-        textarea.textContent += text + '\n';
-      } else {
-        textarea.textContent += `terminal: ${text}\n`;
-      }
-      textarea.scrollTop = textarea.scrollHeight;
-    }
+
+export { TerminalUI };
